@@ -1,0 +1,19 @@
+.back-image {
+  background-image: url(./assets/v3.jpg); /* Use a seamless, small pattern */
+  background-repeat: no-repeat;
+  background-size: cover; /* or remove this line entirely */
+  background-position: center;
+  background-attachment: fixed;
+}
+html {
+  scroll-behavior: auto !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

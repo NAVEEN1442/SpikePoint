@@ -1,0 +1,25 @@
+# Ignore all .env files
+*.env
+**/.env
+server/.env
+spike/.env
+
+# Node modules
+node_modules/
+server/node_modules/
+spike/node_modules/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# OS and editor junk
+.DS_Store
+Thumbs.db
+.vscode/

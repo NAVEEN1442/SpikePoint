@@ -1,0 +1,91 @@
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, BrowserRouter as Router } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../src/App.css';
+
+// Components
+import Signup from './routes/Signup';
+import VerifyCodePage from './routes/VerifyCode';
+import Login from './routes/Login';
+import Home from './routes/Home';
+import Dashboard from './routes/Dashboard';
+import ForgotPasswordPage from './routes/ForgotPass';
+import SetPasswordPage from './routes/SetPassword';
+import TournamentList from './routes/TournamentList';
+import TournamentCreation from './routes/TournamentCreation';
+import TournamentDetails from './routes/TournamentDetails';
+import BuddyUp from './routes/BuddyUp'; // Add this import
+
+// Redux
+import { checkAuth } from './Services/operations/authAPI';
+
+// Background
+import { BackgroundBeams } from './components/ui/background-beams';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useSelector(state => state.auth);
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
+
+// Public Route Component
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useSelector(state => state.auth);
+  return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+};
+
+function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  return (
+    <>
+      {/* Render the animated background */}
+
+
+      {/* Main App Content */}
+      <div className="relative bg-[#0A0A0A] z-10 min-h-screen w-full flex flex-col">
+        <Routes>
+          <Route path="/" element={<Home />} />
+
+          {/* Auth Routes */}
+          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+          <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+          <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
+          <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} /> {/* <-- Updated here */}
+
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/tournament-list" element={<ProtectedRoute><TournamentList /></ProtectedRoute>} />
+          <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
+          <Route path="/tournament-details" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
+
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+
+        {/* Toasts */}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+      </div>
+    </>
+  );
+}
+
+export default App;
