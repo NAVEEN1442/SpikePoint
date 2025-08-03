@@ -23,12 +23,15 @@ export function createTournament(tournamentData, token, navigate) {
 
       const response = await apiConnector("POST", CREATE_TOURNAMENT_API, tournamentData, headers);
 
+      console.log("Create Tournament Response:", response.data.data);
+
       if (!response.data.success) {
         throw new Error(response.data.message || "Tournament creation failed");
       }
 
       toast.success("Tournament created successfully!");
       navigate("/tournament-list");
+      return response;
     } catch (error) {
       console.error("Create Tournament Error:", error);
       toast.error(error.response?.data?.message || error.message || "Failed to create tournament");
@@ -43,11 +46,13 @@ export const getAllTournaments = () => {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiConnector("GET",GET_ALL_TOURNAMENTS_API);
+      const response = await apiConnector("GET", GET_ALL_TOURNAMENTS_API);
       dispatch(setTournaments(response.data.data));
+      return response; // ✅ This allows useEffect to receive it
     } catch (error) {
       dispatch(setError("Failed to load tournaments"));
       toast.error("Error loading tournaments");
+      throw error; // ✅ Re-throw so you can catch it in useEffect
     } finally {
       dispatch(setLoading(false));
     }

@@ -66,8 +66,6 @@ exports.createTeam = async (req, res) => {
   }
 };
 
-
-
 exports.joinTeam = async (req, res) => {
   try {
     const { teamCode } = req.body;

@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Calendar, Users, Trophy, DollarSign, Settings, Link } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createTournament } from '../Services/operations/tournamentAPI';
+import { useNavigate } from 'react-router-dom';
 
-const TournamentCreate = ({ onBack, onSubmit }) => {
+function TournamentCreation() {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: 'My Tournament',
+    description: 'Welcome to the best tournament!',
     type: 'free',
-    entryFee: '',
+    entryFee: '0',
     currencyType: 'INR',
-    prizePool: '',
+    prizePool: '1000',
     gameType: 'unrated',
     format: 'knockout',
     customFormatDescription: '',
-    registrationStart: '',
-    registrationEnd: '',
-    checkInStart: '',
-    checkInEnd: '',
-    matchStartTime: '',
+    registrationStart: '2025-08-01T10:00',
+    registrationEnd: '2025-08-05T18:00',
+    checkInStart: '2025-08-05T18:30',
+    checkInEnd: '2025-08-05T19:00',
+    matchStartTime: '2025-08-05T19:30',
     teamSize: '1v1',
-    maxParticipants: '',
-    rules: '',
+    maxParticipants: '16',
+    rules: 'Standard tournament rules apply.',
     platform: 'PC',
-    discordServerLink: '',
+    discordServerLink: 'https://discord.gg/example',
     bannerImage: '',
   });
 
@@ -32,203 +34,107 @@ const TournamentCreate = ({ onBack, onSubmit }) => {
   const teamSizes = ['1v1', '2v2', '3v3', '4v4', '5v5'];
   const platforms = ['PC', 'Mobile', 'Console', 'Cross-platform'];
 
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    console.log('Form submitted:', formData);
+    // Add form submission logic here
   };
 
-  const FormSection = ({ title, icon: Icon, children }) => (
-    <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
-      <div className="flex items-center gap-3 mb-6">
-        <Icon className="w-5 h-5 text-red-500" />
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
-      </div>
-      {children}
-    </div>
-  );
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const InputField = ({ label, name, type = 'text', placeholder, required = false, className = '' }) => (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={formData[name]}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        required={required}
-        className="bg-gray-800/70 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-      />
-    </div>
-  );
+  const token = useSelector((state) => state.auth.token);
 
-  const SelectField = ({ label, name, options, required = false, className = '' }) => (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <select
-        name={name}
-        value={formData[name]}
-        onChange={handleInputChange}
-        required={required}
-        className="bg-gray-800/70 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
-      >
-        {options.map(option => (
-          <option key={option} value={option} className="bg-gray-800">
-            {option.charAt(0).toUpperCase() + option.slice(1)}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
+const createTournamentHandler = (e) => {
+  e.preventDefault(); // Move this to the top to prevent page reload first
 
-  const TextAreaField = ({ label, name, placeholder, required = false, rows = 4, className = '' }) => (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <textarea
-        name={name}
-        value={formData[name]}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        required={required}
-        rows={rows}
-        className="bg-gray-800/70 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 resize-none"
-      />
-    </div>
-  );
+  dispatch(createTournament(formData, token, navigate))
+    .then((response) => {
+      console.log('Tournament created successfully:', response?.data?.data);
+    })
+    .catch((error) => {
+      console.error('Error creating tournament:', error);
+    });
+};
+
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="bg-gray-900/80 border-b border-gray-800 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors duration-200"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
-            </button>
-            <div className="h-6 w-px bg-gray-700"></div>
-            <h1 className="text-2xl font-bold text-white">Create Tournament</h1>
-          </div>
-        </div>
-      </div>
+    <div className=' bg-[white] ' >
+      <h1>Create Tournament</h1>
+      <form onSubmit={handleSubmit}>
+        <input name="name" value={formData.name} onChange={handleChange} placeholder="Tournament Name" />
 
-      <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-6 py-8">
-        <div className="space-y-8">
-          <FormSection title="Basic Information" icon={Trophy}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <InputField label="Tournament Name" name="name" placeholder="Enter tournament name" required className="lg:col-span-2" />
-              <TextAreaField label="Description" name="description" placeholder="Describe your tournament..." required rows={4} className="lg:col-span-2" />
-              <div className="lg:col-span-2">
-                <label className="text-sm font-medium text-gray-300 block mb-2">
-                  Banner Image
-                </label>
-                <div className="relative">
-                  <input
-                    type="url"
-                    name="bannerImage"
-                    value={formData.bannerImage}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/banner.jpg"
-                    className="bg-gray-800/70 border border-gray-700 rounded-lg px-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 w-full"
-                  />
-                  <Upload className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2" />
-                </div>
-              </div>
-            </div>
-          </FormSection>
+        <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" />
 
-          <FormSection title="Entry & Pricing" icon={DollarSign}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SelectField label="Tournament Type" name="type" options={types} required />
-              <SelectField label="Currency Type" name="currencyType" options={currencyTypes} />
-              <InputField label="Entry Fee" name="entryFee" type="number" placeholder="0" />
-              <InputField label="Prize Pool" name="prizePool" placeholder="Enter prize amount" />
-            </div>
-          </FormSection>
+        <select name="type" value={formData.type} onChange={handleChange}>
+          {types.map(type => <option key={type} value={type}>{type}</option>)}
+        </select>
 
-          <FormSection title="Game Configuration" icon={Settings}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <SelectField label="Game Type" name="gameType" options={gameTypes} required />
-              <SelectField label="Format" name="format" options={formats} required />
-              <SelectField label="Team Size" name="teamSize" options={teamSizes} required />
-              <SelectField label="Platform" name="platform" options={platforms} required />
-            </div>
+        <input name="entryFee" value={formData.entryFee} onChange={handleChange} placeholder="Entry Fee" />
 
-            {formData.format === 'custom' && (
-              <div className="mt-6">
-                <TextAreaField
-                  label="Custom Format Description"
-                  name="customFormatDescription"
-                  placeholder="Describe your custom tournament format..."
-                  required
-                />
-              </div>
-            )}
+        <select name="currencyType" value={formData.currencyType} onChange={handleChange}>
+          {currencyTypes.map(currency => <option key={currency} value={currency}>{currency}</option>)}
+        </select>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <InputField label="Max Participants" name="maxParticipants" type="number" placeholder="Enter maximum participants" required />
-              <div className="relative">
-                <InputField label="Discord Server Link" name="discordServerLink" placeholder="https://discord.gg/..." />
-                <Link className="w-5 h-5 text-gray-400 absolute right-4 top-9" />
-              </div>
-            </div>
-          </FormSection>
+        <input name="prizePool" value={formData.prizePool} onChange={handleChange} placeholder="Prize Pool" />
 
-          <FormSection title="Tournament Schedule" icon={Calendar}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField label="Registration Start" name="registrationStart" type="datetime-local" required />
-              <InputField label="Registration End" name="registrationEnd" type="datetime-local" required />
-              <InputField label="Check-in Start" name="checkInStart" type="datetime-local" required />
-              <InputField label="Check-in End" name="checkInEnd" type="datetime-local" required />
-              <InputField label="Match Start Time" name="matchStartTime" type="datetime-local" required className="md:col-span-2" />
-            </div>
-          </FormSection>
+        <select name="gameType" value={formData.gameType} onChange={handleChange}>
+          {gameTypes.map(game => <option key={game} value={game}>{game}</option>)}
+        </select>
 
-          <FormSection title="Tournament Rules" icon={Users}>
-            <TextAreaField
-              label="Rules & Regulations"
-              name="rules"
-              placeholder="Enter tournament rules and regulations..."
-              required
-              rows={6}
-            />
-          </FormSection>
+        <select name="format" value={formData.format} onChange={handleChange}>
+          {formats.map(format => <option key={format} value={format}>{format}</option>)}
+        </select>
 
-          <div className="flex justify-end gap-4 pt-6">
-            <button
-              type="button"
-              onClick={onBack}
-              className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-medium hover:bg-gray-800 hover:border-gray-500 transition-all duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-red-500/25"
-            >
-              Create Tournament
-            </button>
-          </div>
-        </div>
+        {formData.format === 'custom' && (
+          <textarea
+            name="customFormatDescription"
+            value={formData.customFormatDescription}
+            onChange={handleChange}
+            placeholder="Custom Format Description"
+          />
+        )}
+
+        <label>Registration Start</label>
+        <input type="datetime-local" name="registrationStart" value={formData.registrationStart} onChange={handleChange} />
+
+        <label>Registration End</label>
+        <input type="datetime-local" name="registrationEnd" value={formData.registrationEnd} onChange={handleChange} />
+
+        <label>Check-in Start</label>
+        <input type="datetime-local" name="checkInStart" value={formData.checkInStart} onChange={handleChange} />
+
+        <label>Check-in End</label>
+        <input type="datetime-local" name="checkInEnd" value={formData.checkInEnd} onChange={handleChange} />
+
+        <label>Match Start Time</label>
+        <input type="datetime-local" name="matchStartTime" value={formData.matchStartTime} onChange={handleChange} />
+
+        <select name="teamSize" value={formData.teamSize} onChange={handleChange}>
+          {teamSizes.map(size => <option key={size} value={size}>{size}</option>)}
+        </select>
+
+        <input name="maxParticipants" value={formData.maxParticipants} onChange={handleChange} placeholder="Max Participants" />
+
+        <textarea name="rules" value={formData.rules} onChange={handleChange} placeholder="Rules" />
+
+        <select name="platform" value={formData.platform} onChange={handleChange}>
+          {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+
+        <input name="discordServerLink" value={formData.discordServerLink} onChange={handleChange} placeholder="Discord Server Link" />
+
+        <input name="bannerImage" value={formData.bannerImage} onChange={handleChange} placeholder="Banner Image URL" />
+
+        <button onClick={createTournamentHandler} type="submit">Create Tournament</button>
       </form>
     </div>
   );
-};
+}
 
-export default TournamentCreate;
+export default TournamentCreation;
