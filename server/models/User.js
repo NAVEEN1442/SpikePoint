@@ -28,9 +28,22 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
 
-  // 🌟 New Fields Below:
-
+  // 🌟 Tournament Tracking Fields:
   createdTournaments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tournament',
+    },
+  ],
+
+  activeTournaments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tournament',
+    },
+  ],
+
+  pastTournaments: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Tournament',
@@ -51,9 +64,23 @@ const userSchema = new mongoose.Schema({
     },
   ],
 
+  // 🌟 Team Management Fields:
+  activeTeams: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+    },
+  ],
+
+  defaultTeam: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    default: null,
+  },
+
   profileImage: {
     type: String,
-    default: '', // For future profile image support
+    default: '',
   },
 
   role: {
@@ -61,7 +88,7 @@ const userSchema = new mongoose.Schema({
     enum: ['player', 'admin'],
     default: 'player',
   },
-  
+
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

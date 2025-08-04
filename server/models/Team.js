@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
+
 
 const teamSchema = new mongoose.Schema({
   name: {
@@ -7,12 +7,11 @@ const teamSchema = new mongoose.Schema({
     required: true,
   },
 
-  teamCode: {
-    type: String,
-    unique: true,
-    default: () => uuidv4().split('-')[0], // Simple 4-char code
-  },
-
+teamCode: {
+  type: String,
+  unique: true,
+  required: true // remove default here
+},
   captain: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -31,6 +30,12 @@ const teamSchema = new mongoose.Schema({
     ref: "Tournament",
     required: true,
   },
+
+  createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true
+},
 
   createdAt: {
     type: Date,

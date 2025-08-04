@@ -1,6 +1,6 @@
 const express = require('express');
 const { authenticate } = require('../middleware/auth');
-const { createTournament, getAllTournaments } = require('../controllers/tournamentController');
+const { createTournament, getAllTournaments , deleteTournament,markTournamentAsCompleted , getTournamentById , joinTournament  } = require('../controllers/tournamentController');
 const router = express.Router();
 
 
@@ -10,4 +10,20 @@ router.post('/create', authenticate,createTournament);
 // Get all tournaments (public)
 router.get('/all', getAllTournaments);
 
+// DELETE /api/tournaments/:id
+router.delete('/delete/:id', authenticate, deleteTournament);
+
+router.patch('/complete/:id', authenticate, markTournamentAsCompleted);
+
+// Get tournament by ID (public)
+router.get('/:id', getTournamentById);
+
+// Join a tournament (protected)
+router.patch('/join/:id', authenticate, joinTournament);
+
+   
+
+
+
+// Export the router 
 module.exports = router;
