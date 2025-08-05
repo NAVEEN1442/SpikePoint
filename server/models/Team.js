@@ -7,11 +7,20 @@ const teamSchema = new mongoose.Schema({
     required: true,
   },
 
-teamCode: {
-  type: String,
-  unique: true,
-  required: true // remove default here
-},
+  teamCode: {
+    type: String,
+    unique: true,
+    default: () => uuidv4().split('-')[0], // Simple 4-char code
+  },
+
+  //new field.. added
+  tournamentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tournament",
+    required: true,
+  },
+
+  
   captain: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
