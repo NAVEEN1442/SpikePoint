@@ -42,6 +42,7 @@ export function sendotp(fullName, userName, phoneNumber, email, password, confir
       }
       
       toast.success("OTP sent successfully. Check your email");
+     
       
       // Navigate to verify code page with form data
       navigate("/verify-code", {
@@ -94,6 +95,7 @@ export function verifyAndSignup(fullName, userName, phoneNumber, email, password
       }
       
       toast.success("Account created successfully! Please login.");
+      
       navigate("/login");
     } catch (error) {
       console.error("Verify and Signup Error:", error);
@@ -135,10 +137,7 @@ export function logIn(email, password, navigate) {
             dispatch(setToken(response.data.token));
             localStorage.setItem("token", JSON.stringify(response.data.token));
             
-            // Store user data if available
-            if (response.data.user) {
-                localStorage.setItem("user", JSON.stringify(response.data.user));
-            }
+            
             console.log('going to dashboard')
             navigate("/"); // Navigate to home page after login
         } catch (error) {
@@ -176,6 +175,7 @@ export function signUp(fullName, userName, phoneNumber, email, password, confirm
             }
             
             toast.success("Account created successfully!");
+          
             navigate("/login");
         } catch (error) {
             console.error("Signup Error:", error);
@@ -215,7 +215,7 @@ export function logout(navigate) {
       //   },
       // });
       
-      
+    
       
       // Navigate after clearing state
       if (navigate) {
