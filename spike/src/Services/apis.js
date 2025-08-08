@@ -16,6 +16,7 @@ export const endpoint = {
   // ✅ Tournament Endpoints
   CREATE_TOURNAMENT_API: BASE_URL + "/tournament/create",
   GET_ALL_TOURNAMENTS_API: BASE_URL + "/tournament/all",
+  GET_TOURNAMENT_BY_ID : BASE_URL + "/tournament/:id",
 };
 
 // User endpoints
