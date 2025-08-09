@@ -158,53 +158,50 @@ exports.logIn = async (req, res) => {
     }
 };
 
-exports.sendotp = async (req,res) =>{
+exports.sendotp = async (req, res) => {
+  console.log("OTP request received");
 
-    console.log("OTP")
+  try {
+    const { email } = req.body;
 
-    try {
-        
-
-    const {email} = req.body;
-
-    const existingUser = await User.findOne({email});
-
-    if(existingUser){
-        return res.status(400).json({
-            success:"false",
-            message:"Email already exists please login"
-        })
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    const otp = otpGenerator.generate(6,{
-        upperCaseAlphabets:false,
-        lowerCaseAlphabets:false,
-        specialChars:true,
-    })
+    const existingUser = await User.findOne({ email });
 
-    let uniqueOtp = crypto
-            .createHash("sha256")
-            .update(otp + email + Date.now())
-            .digest("hex")
-            .substring(0, 6);
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists, please login",
+      });
+    }
 
-
-    const newOTP = new OTP({email,otp : uniqueOtp});
-    await OTP.create(newOTP);
-
-    
-    return res.status(200).json({
-        success: true,
-        message: `OTP Sent Successfully`,
-        data:uniqueOtp,
+    // Generate 6-digit numeric OTP
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
     });
 
+    // Optional: extra obfuscation
+    const uniqueOtp = crypto
+      .createHash("sha256")
+      .update(otp + email + Date.now())
+      .digest("hex")
+      .substring(0, 6);
 
-    } catch (error) {
-        console.log(error.message);
-		return res.status(500).json({ success: false, error: error.message });
-    }
+    // Save to DB (triggers email send via OTP model pre-save)
+    await OTP.create({ email, otp: uniqueOtp });
 
-
-}
+    return res.status(200).json({
+      success: true,
+      message: "OTP Sent Successfully",
+      data: uniqueOtp, // You can remove this in production for security
+    });
+  } catch (error) {
+    console.error("Error sending OTP:", error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
 
