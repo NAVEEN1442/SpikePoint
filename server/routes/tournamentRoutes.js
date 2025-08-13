@@ -1,6 +1,6 @@
 const express = require('express');
 const { authenticate } = require('../middleware/auth');
-const { createTournament, getAllTournaments , deleteTournament,markTournamentAsCompleted , getTournamentById , joinTournament  } = require('../controllers/tournamentController');
+const { createTournament, getAllTournaments , deleteTournament,markTournamentAsCompleted , getTournamentById   } = require('../controllers/tournamentController');
 const router = express.Router();
 
 
@@ -17,12 +17,6 @@ router.patch('/complete/:id', authenticate, markTournamentAsCompleted);
 
 // Get tournament by ID (public)
 router.get('/:id', getTournamentById);
-
-// Join a tournament (protected)
-router.patch('/join/:id', authenticate, joinTournament);
-
-   
-
 
 
 // Export the router 

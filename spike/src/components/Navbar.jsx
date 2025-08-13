@@ -50,14 +50,15 @@ export default function NavBar() {
               </Link>
               
               {token || user ? (
-                <button onClick={handleLogout}>
-                  <Button variant="destructive" size="sm">Logout</Button>
-                </button>
+                <Button onClick={handleLogout} variant="destructive" size="sm">
+                  Logout
+                </Button>
               ) : (
                 <Link to="/login">
                   <Button size="sm">Login</Button>
                 </Link>
               )}
+
             </div>
           </div>
 

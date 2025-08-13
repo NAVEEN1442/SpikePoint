@@ -22,7 +22,7 @@ import BuddyUp from './routes/BuddyUp'; // Add this import
 import { checkAuth } from './Services/operations/authAPI';
 
 // Background
-import { BackgroundBeams } from './components/ui/background-beams';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -65,7 +65,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/tournament-list" element={<ProtectedRoute><TournamentList /></ProtectedRoute>} />
           <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
-          <Route path="/tournament-details" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
+          <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -2,6 +2,8 @@ const Team = require('../models/Team');
 const Tournament = require('../models/Tournament');
 const User = require('../models/User');
 const { v4: uuidv4 } = require('uuid');
+
+// Create Team
 exports.createTeam = async (req, res) => {
   try {
     const { tournamentId, teamName } = req.body;
@@ -32,10 +34,13 @@ exports.createTeam = async (req, res) => {
       captain: userId,
     });
 
-    // Add team to user's activeTeams
-    await User.findByIdAndUpdate(userId, { $push: { activeTeams: team._id } });
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        activeTeams: team._id,
+        activeTournaments: tournamentId,
+      },
+    });
 
-    // Update tournament's team block (optional)
     await Tournament.findByIdAndUpdate(tournamentId, {
       $push: {
         teams: {
@@ -44,14 +49,22 @@ exports.createTeam = async (req, res) => {
           teamCode: team.teamCode,
           members: [userId],
         },
+        participants: {
+          _id: userId,
+          joinedAt: new Date(),
+          checkInStatus: false,
+        },
       },
     });
+
+  
+   
 
     return res.status(201).json({
       success: true,
       message: 'Team created successfully',
-      teamCode, // Send team code separately for captain to share
-      team
+      teamCode,
+      team,
     });
   } catch (err) {
     console.error("Error creating team:", err);
@@ -59,10 +72,10 @@ exports.createTeam = async (req, res) => {
   }
 };
 
-
+// Join Team
 exports.joinTeam = async (req, res) => {
   try {
-    const { teamCode } = req.body;
+    const { teamCode, tournamentId } = req.body;
     const userId = req.user.id;
 
     const team = await Team.findOne({ teamCode });
@@ -91,44 +104,42 @@ exports.joinTeam = async (req, res) => {
     team.members.push(userId);
     await team.save();
 
-    // Update user's activeTeams
-    await User.findByIdAndUpdate(userId, { $push: { activeTeams: team._id } });
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        activeTeams: team._id,
+        activeTournaments: tournamentId,
+      },
+    });
 
-    // Update tournament’s teams list
     await Tournament.updateOne(
       { _id: team.tournament, "teams.teamId": team._id },
       { $push: { "teams.$.members": userId } }
     );
 
-    return res.status(200).json({ success: true, message: 'Joined team successfully', team });
+    await Tournament.findByIdAndUpdate(tournamentId, {
+      $push: {
+        participants: {
+          _id: userId,
+          joinedAt: new Date(),
+          checkInStatus: false,
+        },
+      },
+    });
+
+    
+
+    return res.status(200).json({
+      success: true,
+      message: 'Joined team successfully',
+      team,
+    });
   } catch (err) {
     console.error("Error joining team:", err);
     return res.status(500).json({ success: false, message: 'Error joining team' });
   }
 };
 
-const cron = require('node-cron');
-
-cron.schedule('0 * * * *', async () => {
-  const completedTournaments = await Tournament.find({ status: 'completed' });
-
-  for (const tournament of completedTournaments) {
-    const teams = await Team.find({ tournament: tournament._id });
-
-    for (const team of teams) {
-      await User.updateMany(
-        { activeTeams: team._id },
-        { $pull: { activeTeams: team._id } }
-      );
-    }
-
-    await Team.deleteMany({ tournament: tournament._id }); // optional
-  }
-
-  console.log("Clean-up for completed tournaments done.");
-});
-
-
+// Set Default Team
 exports.setDefaultTeam = async (req, res) => {
   try {
     const { teamId } = req.body;
@@ -147,3 +158,28 @@ exports.setDefaultTeam = async (req, res) => {
   }
 };
 
+// Scheduled Clean-up for Completed Tournaments
+const cron = require('node-cron');
+
+cron.schedule('0 * * * *', async () => {
+  try {
+    const completedTournaments = await Tournament.find({ status: 'completed' });
+
+    for (const tournament of completedTournaments) {
+      const teams = await Team.find({ tournament: tournament._id });
+
+      for (const team of teams) {
+        await User.updateMany(
+          { activeTeams: team._id },
+          { $pull: { activeTeams: team._id } }
+        );
+      }
+
+      await Team.deleteMany({ tournament: tournament._id }); // optional
+    }
+
+    console.log("Clean-up for completed tournaments done.");
+  } catch (error) {
+    console.error("Scheduled cleanup error:", error);
+  }
+});

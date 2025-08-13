@@ -7,6 +7,7 @@ const teamRoutes = require("./routes/teamRoutes");
 const defaultTeamRoutes = require("./routes/defaultTeamRoutes");
 
 require('dotenv').config();
+
 // Middleware to parse JSON requests
 app.use(express.json());
 
@@ -29,7 +30,7 @@ db.connect();
 
 // Mount API routes
 app.use("/api/v1/auth", userRouter);
-app.use("/api/v1/tournament",tournamentRouter);
+app.use("/api/v1/tournament", tournamentRouter);
 app.use("/api/v1/team", teamRoutes);
 //new route for default team
 app.use("/api/v1/default-team", defaultTeamRoutes); 
@@ -38,17 +39,17 @@ app.use("/api/v1/default-team", defaultTeamRoutes);
 
 // Basic route for testing
 app.get("/", (req, res) => {
-    res.send("<h1>HELLO HI BYE BYE</h1>");
+  res.send("<h1>HELLO HI BYE BYE</h1>");
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: "Internal Server Error" });
+  console.error(err.stack);
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
 // Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`App listening at ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
