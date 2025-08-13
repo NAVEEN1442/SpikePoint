@@ -4,6 +4,8 @@ const app = express();
 const userRouter = require("./routes/authRoutes");
 const tournamentRouter = require("./routes/tournamentRoutes");
 const teamRoutes = require("./routes/teamRoutes");
+const defaultTeamRoutes = require("./routes/defaultTeamRoutes");
+
 require('dotenv').config();
 
 // Middleware to parse JSON requests
@@ -30,6 +32,10 @@ db.connect();
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/tournament", tournamentRouter);
 app.use("/api/v1/team", teamRoutes);
+//new route for default team
+app.use("/api/v1/default-team", defaultTeamRoutes); 
+
+
 
 // Basic route for testing
 app.get("/", (req, res) => {
