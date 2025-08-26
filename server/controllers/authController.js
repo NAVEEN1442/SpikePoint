@@ -5,16 +5,18 @@ const otpGenerator = require("otp-generator");
 const OTP = require("../models/OTP");
 const crypto = require("crypto");
 const mailSender = require("../utils/mailSender");
+
+
 const isProduction = process.env.NODE_ENV === "production";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: false,       // 🚫 don't use secure on localhost
-  sameSite: "lax",     // works fine locally
-  maxAge: 15 * 24 * 60 * 60 * 1000,
-  path: "/",           // must match in clearCookie
-  // no domain in dev
+  secure: isProduction,           // ✅ must be true on HTTPS
+  sameSite: isProduction ? "none" : "lax",  // ✅ cross-site cookie handling
+  maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+  path: "/",
 };
+
 
 
 // Signup
