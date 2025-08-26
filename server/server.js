@@ -46,12 +46,11 @@ app.use(
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"], // 🔹 allow auth headers
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
     optionsSuccessStatus: 200,
   })
 );
-app.options("*", cors()); // handle preflight globally
 
 
 // Connect DB
