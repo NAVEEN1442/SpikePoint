@@ -224,6 +224,8 @@ export const checkAuth = () => async (dispatch) => {
     // Step 1: check lightweight auth
     const authRes = await apiConnector("GET", IS_AUTH);
 
+    console.log("isAuth response:", authRes.data);
+
     if (authRes.data?.isAuthenticated) {
       // Step 2: fetch full user only if authenticated
       const res = await apiConnector("GET", GET_ME);
