@@ -47,15 +47,34 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    credentials: true, // <- very important for cookies
     optionsSuccessStatus: 200,
   })
 );
 
-
 // Connect DB
 const db = require("./config/database");
 db.connect();
+
+// ------------------
+// 🔹 AUTH COOKIE FIX
+// ------------------
+// Attach a small middleware to ensure cookies are sent correctly
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+// Example: in your login controller when setting cookie
+// res.cookie("token", token, {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production", // secure only in prod
+//   sameSite: "None", // allow cross-site
+//   path: "/",
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// });
+
+// ------------------
 
 // Mount API routes
 app.use("/api/v1/auth", userRouter);
