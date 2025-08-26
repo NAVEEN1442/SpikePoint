@@ -26,12 +26,20 @@ exports.authenticate = async (req, res, next) => {
 
 exports.me = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
     res.status(200).json({
       success: true,
-      user: req.user, // user is already attached by middleware
+      user: req.user,
     });
   } catch (err) {
     console.error("Me route error:", err.message);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
