@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 // 🔹 CORS configuration
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://spikepoint.vercel.app",
+  "https://spike-point-7qse.vercel.app",
 ];
 
 app.use(
