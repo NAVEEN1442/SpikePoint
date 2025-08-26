@@ -41,12 +41,18 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("❌ Blocked by CORS:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // allow cookies/auth headers
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], // 🔹 allow auth headers
+    credentials: true,
+    optionsSuccessStatus: 200,
   })
 );
+app.options("*", cors()); // handle preflight globally
+
 
 // Connect DB
 const db = require("./config/database");
