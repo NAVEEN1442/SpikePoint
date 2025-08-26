@@ -15,6 +15,7 @@ const {
     CHANGE_PASSWORD_API,
     GET_ME,
     LOGOUT_API,
+    IS_AUTH
 
 } = endpoint;
 
@@ -218,22 +219,26 @@ export function logout(navigate) {
 
 
 export const checkAuth = () => async (dispatch) => {
+  dispatch(setLoading(true));
   try {
-    const res = await apiConnector("GET", GET_ME);
+    // Step 1: check lightweight auth
+    const authRes = await apiConnector("GET", IS_AUTH);
 
-    if (res.data?.user) {
-      dispatch(setUser(res.data.user));
+    if (authRes.data?.isAuthenticated) {
+      // Step 2: fetch full user only if authenticated
+      const res = await apiConnector("GET", GET_ME);
+      if (res.data?.user) {
+        dispatch(setUser(res.data.user));
+      } else {
+        dispatch(clearAuth());
+      }
     } else {
       dispatch(clearAuth());
     }
   } catch (err) {
-    if (err.response?.status === 401) {
-      // 🔹 expected case: user not logged in
-      dispatch(clearAuth());
-    } else {
-      // 🔹 only log unexpected errors
-      console.error("checkAuth failed:", err);
-      dispatch(clearAuth());
-    }
+    console.error("checkAuth failed:", err);
+    dispatch(clearAuth());
+  } finally {
+    dispatch(setLoading(false));
   }
 };

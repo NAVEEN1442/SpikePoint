@@ -23,7 +23,7 @@ const SpinnerWrapper = ({ children }) => {
       {loading ? (
                    
                           
-        <span class="loader"></span>
+        <span className="loader"></span>
 
 
       ) : (

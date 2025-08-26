@@ -24,13 +24,31 @@ import SpinnerWrapper from './components/SpinnerWrapper';
 // Route Wrappers
 // ----------------------------
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#111]">
+        <SpinnerWrapper />
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#111]">
+        <SpinnerWrapper />
+      </div>
+    );
+  }
+
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 };
 
 // ----------------------------
@@ -41,12 +59,12 @@ function App() {
   const { loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // Check authentication status on app load
+    // ✅ Check authentication status on app load
     dispatch(checkAuth());
   }, [dispatch]);
 
-  // Show spinner while checking auth/loading
   if (loading) {
+    // ✅ While checking token, show global spinner
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#111]">
         <SpinnerWrapper />
@@ -55,50 +73,42 @@ function App() {
   }
 
   return (
- 
-      <div className="relative bg-[#111111] z-10 min-h-screen w-full flex flex-col">
-        {/* ---------------------------- */}
-        {/* Routes */}
-        {/* ---------------------------- */}
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
-          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-          <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
-          <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} />
+    <div className="relative bg-[#111111] z-10 min-h-screen w-full flex flex-col">
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+        <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
+        <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} />
 
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/tournament-list" element={<ProtectedRoute><TournamentList /></ProtectedRoute>} />
-          <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
-          <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/tournament-list" element={<ProtectedRoute><TournamentList /></ProtectedRoute>} />
+        <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
+        <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
-        {/* ---------------------------- */}
-        {/* Toast Notifications */}
-        {/* ---------------------------- */}
-        <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-            toastClassName="custom-toast" // <- custom class
-          />
-
-      </div>
-
+      {/* Toast Notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="custom-toast"
+      />
+    </div>
   );
 }
 

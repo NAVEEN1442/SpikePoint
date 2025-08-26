@@ -23,6 +23,19 @@ exports.authenticate = async (req, res, next) => {
   }
 };
 
+exports.isAuth = (req, res) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.json({ isAuthenticated: false });
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    return res.json({ isAuthenticated: true });
+  } catch (err) {
+    return res.json({ isAuthenticated: false });
+  }
+};
 
 exports.me = async (req, res) => {
   try {

@@ -15,6 +15,7 @@ export const endpoint = {
   RESET_PASSWORD_API: BASE_URL + "/auth/reset-password",
   CHANGE_PASSWORD_API: BASE_URL + "/auth/change-password",
   GET_ME : BASE_URL + "/auth/me",
+  IS_AUTH : BASE_URL + "/auth/is-auth",
 
   // ✅ Tournament Endpoints
   CREATE_TOURNAMENT_API: BASE_URL + "/tournament/create",
