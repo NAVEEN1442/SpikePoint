@@ -62,7 +62,7 @@ function App() {
         {/* ---------------------------- */}
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
