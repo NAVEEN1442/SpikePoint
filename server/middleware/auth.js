@@ -1,24 +1,58 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 exports.authenticate = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
   try {
+    const token = req.cookies?.token; // 🔑 get from cookie
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: "User not found" });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Invalid token' });
+    console.error("Auth error:", err.message);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+
+exports.isAuth = (req, res) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.json({ isAuthenticated: false });
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    return res.json({ isAuthenticated: true });
+  } catch (err) {
+    return res.json({ isAuthenticated: false });
+  }
+};
+
+exports.me = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: req.user,
+    });
+  } catch (err) {
+    console.error("Me route error:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+

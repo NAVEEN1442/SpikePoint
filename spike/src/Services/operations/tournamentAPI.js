@@ -2,41 +2,93 @@
 import { toast } from "react-toastify";
 import { apiConnector } from "../apiConnector";
 import { endpoint } from "../apis";
-import { setTournaments, setLoading, setError } from "../../slices/tournamentSlice";
+import { setTournaments, setLoading, setError, deleteTournament } from "../../slices/tournamentSlice";
 import { useSelector } from "react-redux";
 import { teamEndpoints } from "../apis";
+import { socket } from "../../socket"; // ✅ import socket
 
 const {
   CREATE_TOURNAMENT_API,
   GET_ALL_TOURNAMENTS_API,
   GET_TOURNAMENT_BY_ID,
+  DELETE_TOURNAMENT_API
 } = endpoint;
 
 const { CREATE_TEAM_API } = teamEndpoints;
 
+// tournamentAPI.js
+export const deleteTheTournament = (tournamentId, navigate) => {
+  return async (dispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const response = await apiConnector("DELETE", DELETE_TOURNAMENT_API.replace(":id", tournamentId));
+
+      if (response.data.success) {
+        toast.success("Tournament deleted successfully!");
+        // ✅ Do NOT emit socket event here, let server handle it
+        navigate("/tournament-list");
+      } else {
+        throw new Error(response.data.message || "Failed to delete tournament");
+      }
+
+      return response;
+    } catch (error) {
+      console.error("[TournamentAPI] Delete Tournament Error:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to delete tournament");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+};
+
+// Create Tournament
 export function createTournament(tournamentData, token, navigate) {
-  return async () => {
+  return async (dispatch, getState) => {
     const toastId = toast.loading("Creating tournament...");
 
     try {
+
       const headers = {
         Authorization: `Bearer ${token}`,
       };
+        
 
-      const response = await apiConnector("POST", CREATE_TOURNAMENT_API, tournamentData, headers);
+      const response = await apiConnector(
+        "POST",
+        CREATE_TOURNAMENT_API,
+        tournamentData,
+        headers
+      );
 
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Tournament creation failed");
+      console.log("Submission Data:");
+
+      for (let [key, value] of tournamentData.entries()) {
+          console.log("Key:", key, "Value:", value);
+        }
+
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Tournament creation failed");
       }
 
-  
+      console.log("[TournamentAPI] Tournament created:", response.data.data);
 
       toast.success("Tournament created successfully!");
       navigate("/tournament-list");
-      return response;
+
+      return {
+        success: true,
+        data: response.data.data,
+      };
     } catch (error) {
-      console.error("Create Tournament Error:", error);
+      console.error("[TournamentAPI] Create Tournament Error:", error);
+
       toast.error(error.response?.data?.message || error.message || "Failed to create tournament");
+
+      return {
+        success: false,
+        error: error.response?.data || error.message,
+      };
     } finally {
       toast.dismiss(toastId);
     }
@@ -44,17 +96,42 @@ export function createTournament(tournamentData, token, navigate) {
 }
 
 
+
+// Get all tournaments
 export const getAllTournaments = () => {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
       const response = await apiConnector("GET", GET_ALL_TOURNAMENTS_API);
+
+      console.log("[TournamentAPI] Fetched tournaments:", response.data.data);
       dispatch(setTournaments(response.data.data));
-      return response; // ✅ This allows useEffect to receive it
+
+      return response;
     } catch (error) {
+      console.error("[TournamentAPI] Fetch tournaments error:", error);
       dispatch(setError("Failed to load tournaments"));
       toast.error("Error loading tournaments");
-      throw error; // ✅ Re-throw so you can catch it in useEffect
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+};
+
+// Get Tournament by ID
+export const getTournamentById = (tournamentId) => {
+  return async (dispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const response = await apiConnector("GET", GET_TOURNAMENT_BY_ID.replace(":id", tournamentId));
+      console.log("[TournamentAPI] Fetched Tournament by ID:", response?.data?.data);
+      return response?.data?.data;
+    } catch (error) {
+      console.error("[TournamentAPI] Get Tournament by ID Error:", error);
+      dispatch(setError("Failed to load tournament"));
+      toast.error("Error loading tournament");
+      throw error;
     } finally {
       dispatch(setLoading(false));
     }
@@ -62,22 +139,6 @@ export const getAllTournaments = () => {
 };
 
 
-export const getTournamentById = (tournamentId) => {
-  return async (dispatch) => {
-    dispatch(setLoading(true));
-    try {
-      const response = await apiConnector("GET",GET_TOURNAMENT_BY_ID.replace(":id", tournamentId));
-      console.log("Fetched Tournament:", response?.data?.data);
-      return response?.data?.data; // ✅ Return the tournament data
-    } catch (error) {
-      dispatch(setError("Failed to load tournament"));
-      toast.error("Error loading tournament");
-      throw error; // ✅ Re-throw so you can catch it in useEffect
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
-}
 
 
 export const createTeamForTournament = ({ tournamentId, teamName }) => {

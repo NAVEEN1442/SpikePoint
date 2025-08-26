@@ -1,170 +1,104 @@
-import React, { useState } from 'react';
-import { FaUsers, FaTrophy } from 'react-icons/fa';
-import { BsCalendarEvent } from 'react-icons/bs';
-import { GiMoneyStack } from 'react-icons/gi';
-import { useDispatch, useSelector } from 'react-redux';
-import { createTeam, joinTeam } from '../Services/operations/teamAPI';
-import { useNavigate } from 'react-router-dom';
+// src/components/ListCard.js
 
-function TournamentCard({ tournaments }) {
-  const [showModal, setShowModal] = useState(null);
-  const [createdTeam, setCreatedTeam] = useState(null);
-  const [teamDetailsModalOpen, setTeamDetailsModalOpen] = useState(false);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { token } = useSelector((state) => state.auth);
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { format, isBefore, isAfter } from "date-fns";
+import { deleteTheTournament } from "@/Services/operations/tournamentAPI";
+import { Gamepad2, Swords, Calendar, Users, Award, Trash2 } from "lucide-react";
 
-  const getTypeColor = (type) => {
-    switch (type.toLowerCase()) {
-      case 'free':
-        return 'bg-green-900 text-green-300 border-green-700';
-      case 'in-game currency':
-        return 'bg-blue-900 text-blue-300 border-blue-700';
-      case 'real money':
-        return 'bg-yellow-900 text-yellow-300 border-yellow-700';
-      default:
-        return 'bg-gray-800 text-gray-300 border-gray-600';
-    }
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return 'TBD';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getStatusInfo = (tournament) => {
-    const now = new Date();
-    const startTime = new Date(tournament.matchStartTime);
-    const registrationEnd = new Date(tournament.registrationEndTime || tournament.matchStartTime);
-
-    if (now < registrationEnd) {
-      return {
-        status: 'open',
-        color: 'bg-green-100 text-green-700 border-green-300',
-        text: 'Registration Open',
-      };
-    } else if (now < startTime) {
-      return {
-        status: 'upcoming',
-        color: 'bg-blue-100 text-blue-700 border-blue-300',
-        text: 'Upcoming',
-      };
-    } else {
-      return {
-        status: 'live',
-        color: 'bg-red-100 text-red-700 border-red-300',
-        text: 'Live',
-      };
-    }
-  };
-
-  const handleCreateTeam = async () => {
+// Helper function to format dates nicely
+const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     try {
-      const result = await dispatch(createTeam(tournaments._id, token, navigate));
-      if (result?.payload) {
-        setCreatedTeam(result.payload);
-        setTeamDetailsModalOpen(true);
-        setShowModal(null);
-      }
+        return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
     } catch (error) {
-      console.error('Failed to create team', error);
+        return "Invalid Date";
     }
-  };
+};
 
-  const handleJoinTeam = () => {
-    setShowModal('join');
-  };
+// Helper function to determine the tournament status
+const getTournamentStatus = (tournament) => {
+    const now = new Date();
+    const regStart = new Date(tournament.registrationStart);
+    const regEnd = new Date(tournament.registrationEnd);
+    const matchStart = new Date(tournament.matchStartTime);
 
-  const handleJoinTeamFromModal = (code) => {
-    if (code.trim()) {
-      dispatch(joinTeam(code.trim(), navigate));
-      setShowModal(null);
-    }
-  };
+    if (isBefore(now, regStart)) return { text: "Upcoming", color: "bg-cyan-500" };
+    if (isAfter(now, regStart) && isBefore(now, regEnd)) return { text: "Registration Open", color: "bg-green-500" };
+    if (isAfter(now, regEnd) && isBefore(now, matchStart)) return { text: "Registration Closed", color: "bg-yellow-500" };
+    if (isAfter(now, matchStart)) return { text: "Live / Concluded", color: "bg-red-500" };
+    return { text: "Scheduled", color: "bg-gray-500" };
+};
 
-  const statusInfo = getStatusInfo(tournaments);
+function TournamentCard({ tournament }) {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const status = getTournamentStatus(tournament);
+    
+    // The delete action is now self-contained in the card
+    const handleDelete = (e) => {
+        e.preventDefault(); // Prevent navigation if card is wrapped in a link
+        e.stopPropagation();
+        
+            dispatch(deleteTheTournament(tournament._id, navigate));
+        
+    };
 
-  return (
-    <>
-      <div className="w-full sm:w-1/2 md:w-[45%] lg:w-[30%] bg-[#1a1a1a]/60 backdrop-blur-md shadow-xl rounded-xl border border-[#333] transition-all hover:shadow-2xl hover:scale-[1.02] duration-300 m-2">
-        <div className="p-4 border-b border-[#2c2c2c]">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <h2 className="text-xl font-bold text-white">{tournaments.name}</h2>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${statusInfo.color}`}>
-                  {statusInfo.text}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm">{tournaments.description}</p>
+    return (
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:border-indigo-500 hover:shadow-indigo-500/20 hover:-translate-y-1">
+            {/* Banner Image */}
+            <div className="relative">
+                <img
+                    src={tournament.bannerImage.url || 'https://via.placeholder.com/400x200?text=No+Banner'}
+                    alt={`${tournament.name} Banner`}
+                    className="w-full h-40 object-cover"
+                />
+                <div className={`absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full text-white ${status.color}`}>
+                    {status.text}
+                </div>
             </div>
-            <FaTrophy className="text-[#ff4655] text-lg mt-2 sm:mt-1" />
-          </div>
+
+            <div className="p-5">
+                {/* Title & Description */}
+                <h2 className="text-xl font-bold text-white truncate">{tournament.name}</h2>
+                <p className="text-gray-400 text-sm mt-1 h-10 overflow-hidden text-ellipsis">{tournament.description}</p>
+                
+                {/* Core Info Grid */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-4 text-sm">
+                    <InfoItem icon={Award} label="Prize Pool" value={tournament.prizePool} />
+                    <InfoItem icon={Gamepad2} label="Game" value={tournament.gameType} />
+                    <InfoItem icon={Users} label="Max Teams" value={tournament.maxTeams} />
+                    <InfoItem icon={Swords} label="Format" value={tournament.format} />
+                </div>
+
+                {/* Registration Info */}
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                    <InfoItem icon={Calendar} label="Registration Ends" value={formatDate(tournament.registrationEnd)} />
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between mt-5">
+                    <Link to={`/tournament-details/${tournament._id}`}>
+                        <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
+                            View Details
+                        </button>
+                    </Link>
+                    <button onClick={handleDelete} className="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full">
+                        <Trash2 size={18} />
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <div className="px-4 py-3 border-b border-[#2c2c2c]">
-          <div className="flex flex-wrap gap-2">
-            <span className={`px-2 py-1 rounded text-xs font-medium border ${getTypeColor(tournaments.type)}`}>
-              {tournaments.type}
-            </span>
-            <span className="bg-[#2a2a2a] text-gray-300 px-2 py-1 rounded text-xs font-medium border border-[#444]">
-              {tournaments.gameType}
-            </span>
-            <span className="bg-[#2a2a2a] text-purple-400 px-2 py-1 rounded text-xs font-medium border border-purple-600">
-              {tournaments.format}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 text-gray-200">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <GiMoneyStack className="text-green-400" />
-              <div>
-                <p className="text-xs text-gray-400">Entry</p>
-                <p className="font-semibold">{tournaments.type === 'free' ? 'Free' : `₹${tournaments.entryFee}`}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <BsCalendarEvent className="text-blue-400" />
-              <div>
-                <p className="text-xs text-gray-400">Start</p>
-                <p className="font-semibold">{formatDateTime(tournaments.matchStartTime)}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <FaUsers className="text-purple-400" />
-              <div>
-                <p className="text-xs text-gray-400">Team</p>
-                <p className="font-semibold">{tournaments.teamSize} Players</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {statusInfo.status === 'open' && (
-          <div className="px-4 pb-4">
-            <button
-              onClick={() => setShowModal('main')}
-              className="w-full font-medium py-2 px-4 rounded bg-[#ff4655] text-white hover:bg-[#e73e4b] transition"
-            >
-              Register Here
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Modal components can stay the same as your previous code, they are already responsive */}
-    </>
-  );
+    );
 }
+
+// Sub-component for consistent info display
+const InfoItem = ({ icon: Icon, label, value }) => (
+    <div className="flex items-center gap-2 text-gray-300">
+        <Icon className="text-gray-500" size={16} />
+        <span className="capitalize">{value || "N/A"}</span>
+    </div>
+);
 
 export default TournamentCard;

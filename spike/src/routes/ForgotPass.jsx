@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
 import forgotPassword from '../assets/forgot-pass.png';
-import logo from '../assets/logo.png'; // <-- Add your logo path here
+import logo from '../assets/logo.jpg'; // <-- Add your logo path here
 import { Link } from "react-router-dom";
 
 const ForgotPasswordPage = () => {

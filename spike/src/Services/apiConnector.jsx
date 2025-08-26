@@ -1,53 +1,53 @@
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api/v1";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:4000/api/v1";
+console.log("[API] Base URL:", BASE_URL);
 
 // Create axios instance with default config
 export const axiosInstance = axios.create({
-    baseURL: BASE_URL,
-    timeout: 10000, // 10 second timeout
-    headers: {
-        "Content-Type": "application/json",
-    },
+  baseURL: BASE_URL,
+  timeout: 10000, // 10s
+  
+  withCredentials: true, // 👈 VERY IMPORTANT (send cookies with requests)
 });
 
-// Request interceptor to add auth token
+// Request interceptor (no need to attach token anymore)
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            config.headers.Authorization = `Bearer ${JSON.parse(token)}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
+  (config) => {
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle common errors
+// Response interceptor
 axiosInstance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            window.location.href = "/login";
-        }
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Dispatch logout action
+      // e.g. store.dispatch({ type: "LOGOUT" });
+      
+      // Optional: navigate only if not already on login page
+      if (window.location.pathname !== "/login") {
+        // don’t use full reload
+        window.history.pushState({}, "", "/login");
+      }
     }
+    return Promise.reject(error);
+  }
 );
 
-// Main API connector function
-export const apiConnector = (method, url, bodyData, headers, params) => {
-    return axiosInstance({
-        method: `${method}`,
-        url: `${url}`,
-        data: bodyData ? bodyData : null,
-        headers: headers ? headers : null,
-        params: params ? params : null,
-    });
+
+export const apiConnector = (method, url, bodyData, headers = {}, params = {}) => {
+  return axiosInstance({
+    method,
+    url,
+    data: bodyData || undefined,
+    headers: {
+      ...headers,
+      ...(bodyData instanceof FormData ? {} : { "Content-Type": "application/json" }),
+    },
+    params,
+  });
 };
+
