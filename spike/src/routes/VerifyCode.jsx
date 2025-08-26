@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.jpg";
 import verifyIMG from "../assets/verifyCode.png";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";

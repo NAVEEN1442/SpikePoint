@@ -1,34 +1,36 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  token: localStorage.getItem('token') || null,
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  loading: false,
-  isAuthenticated: !!localStorage.getItem('token'),
+  token: null,             // no longer needed with cookies, but keep for API fallback
+  user: null,
+  loading: true,           // 👈 start in loading state until /auth/me resolves
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setToken: (state, action) => {
-      console.log('Setting token:', action.payload); // Debug log
+      console.log("Setting token:", action.payload);
       state.token = action.payload;
       state.isAuthenticated = !!action.payload;
     },
     setUser: (state, action) => {
-      console.log('Setting user:', action.payload); // Debug log
+      console.log("Setting user:", action.payload);
       state.user = action.payload;
+      state.isAuthenticated = !!action.payload;
+      state.loading = false;  // ✅ mark auth check complete
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
     clearAuth: (state) => {
-      console.log('Clearing auth state'); // Debug log
+      console.log("Clearing auth state");
       state.token = null;
       state.user = null;
-      state.loading = false;
       state.isAuthenticated = false;
+      state.loading = false;
     },
   },
 });

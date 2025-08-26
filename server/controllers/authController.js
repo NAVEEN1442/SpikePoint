@@ -5,6 +5,17 @@ const otpGenerator = require("otp-generator");
 const OTP = require("../models/OTP");
 const crypto = require("crypto");
 const mailSender = require("../utils/mailSender");
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: false,       // 🚫 don't use secure on localhost
+  sameSite: "lax",     // works fine locally
+  maxAge: 15 * 24 * 60 * 60 * 1000,
+  path: "/",           // must match in clearCookie
+  // no domain in dev
+};
+
 
 // Signup
 exports.signUp = async (req, res) => {
@@ -113,71 +124,56 @@ exports.logIn = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Required fields check
     if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
-    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User doesn't exist. Please sign up first.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "User doesn't exist. Please sign up first." });
     }
 
-    // Check password
     const isPasswordCorrect = await bcrypt.compare(
       password,
       existingUser.password
     );
     if (!isPasswordCorrect) {
-      return res.status(400).json({
-        success: false,
-        message: "Incorrect password",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Incorrect password" });
     }
 
-    // Create JWT payload
-    const payload = {
-      email: existingUser.email,
-      id: existingUser._id,
-    };
+    // JWT payload
+    const payload = { id: existingUser._id, email: existingUser.email };
 
-    // Sign token
+    // Create token
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "15d",
     });
 
-    existingUser.token = token;
+
+    // Remove password before sending
     existingUser.password = undefined;
 
-    const options = {
-      expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-      httpOnly: true,
-    };
-
-    res
-      .cookie("token", token, options)
+    res.cookie("token", token, cookieOptions)
       .status(200)
       .json({
         success: true,
         user: existingUser,
-        token,
         message: "User logged in successfully",
       });
   } catch (error) {
     console.error("Error during login:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong during login",
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong during login" });
   }
 };
+
 
 // Send OTP
 exports.sendotp = async (req, res) => {
@@ -231,3 +227,17 @@ exports.sendotp = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.logout = (req, res) => {
+
+  res.clearCookie("token", cookieOptions);
+
+  console.log("User logged out successfully");
+
+  return res.json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
+

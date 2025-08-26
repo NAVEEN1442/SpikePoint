@@ -7,8 +7,9 @@ const tournamentSchema = new mongoose.Schema({
   },
   description: String,
 
-  bannerImage: {
-    type: String, // URL or path to banner image
+   bannerImage: {
+    url: { type: String },       // Cloudinary secure_url
+    public_id: { type: String }, // Cloudinary public_id
   },
 
   type: {
@@ -20,12 +21,6 @@ const tournamentSchema = new mongoose.Schema({
   entryFee: {
     type: Number,
     default: 0,
-  },
-
-  currencyType: {
-    type: String,
-    enum: ['INR', 'USD', 'coins', 'tokens'],
-    default: 'INR',
   },
 
   prizePool: {
@@ -41,13 +36,10 @@ const tournamentSchema = new mongoose.Schema({
 
   format: {
     type: String,
-    enum: ['knockout', 'league', 'custom'],
+    enum: ['knockout', 'league'],
     required: true,
   },
 
-  customFormatDescription: {
-    type: String,
-  },
 
   registrationStart: Date,
   registrationEnd: Date,
@@ -104,17 +96,13 @@ const tournamentSchema = new mongoose.Schema({
     default: true,
   },
 
-  status: {
-    type: String,
-    enum: ['upcoming', 'ongoing', 'completed'],
-    default: 'upcoming',
-  },
-
   tournamentStatus: {
     type: String,
     enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
     default: 'upcoming',
   },
+
+ 
 
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -139,12 +127,6 @@ const tournamentSchema = new mongoose.Schema({
   rules: {
     type: String,
     default: "Standard rules apply.",
-  },
-
-  platform: {
-    type: String,
-    enum: ['PC', 'Mobile', 'Console', 'Cross-platform'],
-    default: 'PC',
   },
 
   discordServerLink: {

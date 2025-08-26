@@ -1,19 +1,34 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
+const cookieParser = require("cookie-parser");
+
+
+
 const app = express();
+app.use(cookieParser());
+require('dotenv').config();
+
+// Routers
 const userRouter = require("./routes/authRoutes");
 const tournamentRouter = require("./routes/tournamentRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const defaultTeamRoutes = require("./routes/defaultTeamRoutes");
 
-require('dotenv').config();
+// Middleware
+// Only apply express.json() if NOT multipart/form-data
+app.use((req, res, next) => {
+  if (req.is("multipart/form-data")) {
+    next(); // let Multer handle it
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
-// Middleware to parse JSON requests
-app.use(express.json());
 
 // CORS configuration
 const allowedOrigins = ['http://localhost:5173'];
-
 app.use(cors({
   origin: function (origin, callback) {
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
@@ -21,10 +36,12 @@ app.use(cors({
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true, // 🔑 allow cookies to be sent
 }));
 
-// Connect to the database
+
+// Connect DB
 const db = require("./config/database");
 db.connect();
 
@@ -32,24 +49,42 @@ db.connect();
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/tournament", tournamentRouter);
 app.use("/api/v1/team", teamRoutes);
-//new route for default team
-app.use("/api/v1/default-team", defaultTeamRoutes); 
+app.use("/api/v1/default-team", defaultTeamRoutes);
 
-
-
-// Basic route for testing
+// Test route
 app.get("/", (req, res) => {
   res.send("<h1>HELLO HI BYE BYE</h1>");
 });
 
-// Error handling middleware
+// Error middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-// Start the server
+// 🔹 Setup HTTP + Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+  },
+});
+
+// Attach io to app so controllers can use it
+app.set("io", io);
+
+// 🔹 Log socket connections
+io.on("connection", (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`❌ User disconnected: ${socket.id}`);
+  });
+});
+
+// Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

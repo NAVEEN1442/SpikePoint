@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { Routes, Route, Navigate, BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../src/App.css';
+import { checkAuth } from './Services/operations/authAPI';
 
-// Components
+// Pages & Components
 import Signup from './routes/Signup';
 import VerifyCodePage from './routes/VerifyCode';
 import Login from './routes/Login';
@@ -16,50 +17,58 @@ import SetPasswordPage from './routes/SetPassword';
 import TournamentList from './routes/TournamentList';
 import TournamentCreation from './routes/TournamentCreation';
 import TournamentDetails from './routes/TournamentDetails';
-import BuddyUp from './routes/BuddyUp'; // Add this import
+import BuddyUp from './routes/BuddyUp';
+import SpinnerWrapper from './components/SpinnerWrapper';
 
-// Redux
-import { checkAuth } from './Services/operations/authAPI';
-
-// Background
-
-
-// Protected Route Component
+// ----------------------------
+// Route Wrappers
+// ----------------------------
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
-// Public Route Component
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
+// ----------------------------
+// Main App
+// ----------------------------
 function App() {
   const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    // Check authentication status on app load
     dispatch(checkAuth());
   }, [dispatch]);
 
+  // Show spinner while checking auth/loading
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#111]">
+        <SpinnerWrapper />
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* Render the animated background */}
-
-
-      {/* Main App Content */}
-      <div className="relative bg-[#0A0A0A] z-10 min-h-screen w-full flex flex-col">
+ 
+      <div className="relative bg-[#111111] z-10 min-h-screen w-full flex flex-col">
+        {/* ---------------------------- */}
+        {/* Routes */}
+        {/* ---------------------------- */}
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
-
-          {/* Auth Routes */}
           <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
           <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
           <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
-          <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} /> {/* <-- Updated here */}
+          <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -67,24 +76,29 @@ function App() {
           <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
           <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
 
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
 
-        {/* Toasts */}
+        {/* ---------------------------- */}
+        {/* Toast Notifications */}
+        {/* ---------------------------- */}
         <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            toastClassName="custom-toast" // <- custom class
+          />
+
       </div>
-    </>
+
   );
 }
 

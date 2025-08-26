@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.jpg';
 import loginIMG from '../assets/loginIMG.png';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logIn } from '../Services/operations/authAPI';
+import {  logIn } from '../Services/operations/authAPI';
+
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,10 @@ const Login = () => {
     email: '',
     password: ''
   });
+
+
+
+  
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);

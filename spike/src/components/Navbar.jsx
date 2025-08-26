@@ -1,11 +1,11 @@
-import { LogIn, LogOut, Wallet, Trophy, Menu, X } from 'lucide-react';
+import {  Wallet, Trophy, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.jpg';
 import { useSelector, useDispatch } from 'react-redux';
-import { setToken, setUser } from '../slices/authSlice';
 import { toast } from 'react-hot-toast';
 import { Button } from './ui/button';
+import { logout } from '@/Services/operations/authAPI';
 
 export default function NavBar() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -17,9 +17,9 @@ export default function NavBar() {
   const handleLogout = () => setShowLogoutModal(true);
 
   const confirmLogout = () => {
-    dispatch(setToken(null));
-    dispatch(setUser(null));
-    localStorage.clear();
+     console.log("navbar hi");
+    dispatch(logout(navigate));
+    console.log("navbar hi");
     toast.success('Logged out successfully!');
     setShowLogoutModal(false);
     navigate('/');
@@ -85,7 +85,7 @@ export default function NavBar() {
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo */}
           <Link to="/" className="text-white font-bold text-xl">
-            Logo
+            <img src={logo} />
           </Link>
 
           {/* Mobile Menu Button */}

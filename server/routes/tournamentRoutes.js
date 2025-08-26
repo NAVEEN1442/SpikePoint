@@ -2,10 +2,11 @@ const express = require('express');
 const { authenticate } = require('../middleware/auth');
 const { createTournament, getAllTournaments , deleteTournament,markTournamentAsCompleted , getTournamentById   } = require('../controllers/tournamentController');
 const router = express.Router();
+const upload = require('../middleware/upload'); // Assuming you have a multer setup for file uploads
 
 
 // Create a tournament (protected)
-router.post('/create', authenticate,createTournament);
+router.post('/create', upload.single("bannerImage"), authenticate,createTournament);
 
 // Get all tournaments (public)
 router.get('/all', getAllTournaments);

@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import rootReducer from '../reducer/index.js'
 
+
 const store = configureStore({
   reducer:rootReducer,
 });
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')).render(
     
       <Provider store={store} >
         <BrowserRouter>
-          <App />
+         
+            <App />
+          
         </BrowserRouter>
         
       </Provider>

@@ -1,13 +1,21 @@
 import { toast } from "react-toastify";
 import { apiConnector } from "../apiConnector";
 import { endpoint } from "../apis";
-import { setLoading, setToken ,setUser} from "../../slices/authSlice";
+import { setLoading, setToken ,setUser,clearAuth} from "../../slices/authSlice";
 
 
 const {
     SIGNUP_API,
     LOGIN_API,
     OTP_API,
+    VERIFY_OTP_API,
+    RESEND_OTP_API,
+    FORGOT_PASSWORD_API,
+    RESET_PASSWORD_API,
+    CHANGE_PASSWORD_API,
+    GET_ME,
+    LOGOUT_API,
+
 } = endpoint;
 
 // Send OTP to email
@@ -108,47 +116,38 @@ export function verifyAndSignup(fullName, userName, phoneNumber, email, password
   };
 }
 
-// Login function
 export function logIn(email, password, navigate) {
-    return async (dispatch) => {
-        const toastId = toast.loading("Logging in...");
-        dispatch(setLoading(true));
+  return async (dispatch) => {
+    const toastId = toast.loading("Logging in...");
+    dispatch(setLoading(true));
 
-        try {
-            // Validate inputs
-            if (!email || !password) {
-                throw new Error("Please enter both email and password");
-            }
-            
-            const response = await apiConnector("POST", LOGIN_API, {
-                email,
-                password,
-            });
-            
-            console.log("Login API Response:", response.data);
-            
-            if (!response.data.success) {
-                throw new Error(response.data.message || "Login failed");
-            }
-            
-            toast.success("Login successful!");
-            
-            // Store token
-            dispatch(setToken(response.data.token));
-            localStorage.setItem("token", JSON.stringify(response.data.token));
-            
-            
-            console.log('going to dashboard')
-            navigate("/"); // Navigate to home page after login
-        } catch (error) {
-            console.error("Login Error:", error);
-            const errorMessage = error.response?.data?.message || error.message || "Login failed";
-            toast.error(errorMessage);
-        } finally {
-            dispatch(setLoading(false));
-            toast.dismiss(toastId);
-        }
-    };
+    try {
+      if (!email || !password) throw new Error("Please enter both email and password");
+
+      const response = await apiConnector("POST", LOGIN_API, { email, password });
+
+      console.log("Login API Response:", response.data);
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Login failed");
+      }
+
+      toast.success("Login successful!");
+
+      // ✅ Only save user data in Redux
+      dispatch(setUser(response.data.user));
+      dispatch(setToken(true)); // we just store a boolean "authenticated"
+
+      navigate("/");
+    } catch (error) {
+      console.error("Login Error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      toast.error(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
+      toast.dismiss(toastId);
+    }
+  };
 }
 
 // Signup function (alternative approach - direct signup without OTP)
@@ -192,56 +191,49 @@ export function signUp(fullName, userName, phoneNumber, email, password, confirm
 // Logout function
 
 
-// Logout function - make sure it clears Redux state
 export function logout(navigate) {
+  console.log("User logged out successfully");
   return async (dispatch) => {
+    console.log("User logged out successfully");
     try {
-      // Clear Redux state FIRST
+      // Call backend logout route (clears cookie)
+      await apiConnector("POST", LOGOUT_API);
+
+      console.log("User logged out successfully");
+
+      // Clear Redux
       dispatch(setToken(null));
       dispatch(setUser(null));
-      
-      // Clear localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('rememberMe');
-      localStorage.removeItem('rememberedEmail');
+
+      console.log("User logged out successfully");
+
       toast.success("Logged out successfully!");
-      
-      // Optional: Make API call to logout on server
-      // await fetch('/api/auth/logout', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`,
-      //   },
-      // });
-      
-    
-      
-      // Navigate after clearing state
-      if (navigate) {
-        navigate('/');
-      }
+      if (navigate) navigate("/login");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       toast.error("Error logging out");
     }
   };
 }
 
-// Check if user is authenticated
-export function checkAuth() {
-    return (dispatch) => {
-        try {
-            const token = localStorage.getItem("token");
-            if (token) {
-                dispatch(setToken(JSON.parse(token)));
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error("Check Auth Error:", error);
-            localStorage.removeItem("token");
-            return false;
-        }
-    };
-}
+
+export const checkAuth = () => async (dispatch) => {
+  try {
+    const res = await apiConnector("GET", GET_ME);
+
+    if (res.data?.user) {
+      dispatch(setUser(res.data.user));
+    } else {
+      dispatch(clearAuth());
+    }
+  } catch (err) {
+    if (err.response?.status === 401) {
+      // 🔹 expected case: user not logged in
+      dispatch(clearAuth());
+    } else {
+      // 🔹 only log unexpected errors
+      console.error("checkAuth failed:", err);
+      dispatch(clearAuth());
+    }
+  }
+};

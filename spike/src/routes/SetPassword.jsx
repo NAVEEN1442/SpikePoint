@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import logo from "../assets/logo.png";         // ✅ Replace with your actual logo path
+import logo from "../assets/logo.jpg";         // ✅ Replace with your actual logo path
 import resetIMG from "../assets/setPassword.png"; // ✅ Replace with your image asset path
 
 const SetPasswordPage = () => {

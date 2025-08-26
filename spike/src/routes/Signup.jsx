@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import signupIMG from '../assets/signupIMG.png';
-import logo from '../assets/logo.png';
+import logo from '../assets/logo.jpg';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { sendotp } from '../Services/operations/authAPI';
