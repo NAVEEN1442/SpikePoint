@@ -258,48 +258,6 @@ exports.deleteTournament = async (req, res) => {
 
 // Utility: Move from active to past tournaments
 
-// exports.updateTournamentStatus = async (req, res) => {
-//   try {
-//     const { status } = req.body;
-
-//     const validStatuses = ["upcoming", "ongoing", "completed", "cancelled"];
-//     if (!validStatuses.includes(status)) {
-//       return res.status(400).json({ success: false, message: "Invalid status" });
-//     }
-
-//     const tournament = await Tournament.findByIdAndUpdate(
-//       req.params.id,
-//       { tournamentStatus: status },   // ✅ correct field
-//       { new: true }
-//     );
-
-//     if (!tournament) {
-//       return res.status(404).json({ success: false, message: "Tournament not found" });
-//     }
-
-//     // 🔹 If tournament completed, move to past
-//     if (status === "completed") {
-//       await moveTournamentToPast(tournament._id);
-//     }
-
-//     // 🔹 Emit socket events (optional if you’re using sockets)
-//     const io = req.app.get("io");
-//     if (io) {
-//       io.emit("tournament_updated", tournament);         // generic
-//       io.emit(`tournament_${status}`, tournament);       // status-specific
-//     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: `Tournament marked as ${status}`,
-//       data: tournament,
-//     });
-//   } catch (error) {
-//     console.error("❌ Update Tournament Status Error:", error);
-//     return res.status(500).json({ success: false, message: "Could not update status" });
-//   }
-// };
-
 
 exports.updateTournamentStatus = async (req, res) => {
   try {
