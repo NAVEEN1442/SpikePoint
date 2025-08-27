@@ -169,3 +169,37 @@ export const createTeamForTournament = ({ tournamentId, teamName }) => {
     }
   };
 };
+
+//new updatetournamentstatus function
+
+// ✅ Update Tournament Status
+export const updateTournamentStatus = (tournamentId, status) => {
+  return async (dispatch, getState) => {
+    dispatch(setLoading(true));
+    try {
+      const token = getState().auth.token;
+
+      const response = await apiConnector(
+        "PUT",
+        `/api/v1/tournament/${tournamentId}/status`,
+        { status },
+        {
+          Authorization: `Bearer ${token}`,
+        }
+      );
+
+      if (response?.data?.success) {
+        toast.success("Tournament status updated!");
+        return response.data;
+      } else {
+        throw new Error(response?.data?.message || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("[TournamentAPI] Update Status Error:", error);
+      toast.error(error.response?.data?.message || error.message);
+      throw error;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+};
