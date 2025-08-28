@@ -95,6 +95,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
           <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
+          <Route/>
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

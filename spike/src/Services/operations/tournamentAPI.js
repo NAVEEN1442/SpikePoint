@@ -181,7 +181,7 @@ export const updateTournamentStatus = (tournamentId, status) => {
 
       const response = await apiConnector(
         "PUT",
-        `/api/v1/tournament/${tournamentId}/status`,
+        `/tournament/${tournamentId}/status`,
         { status },
         {
           Authorization: `Bearer ${token}`,
