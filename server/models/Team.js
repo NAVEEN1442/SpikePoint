@@ -10,7 +10,7 @@ const teamSchema = new mongoose.Schema({
   teamCode: {
     type: String,
     unique: true,
-    default: () => uuidv4().split('-')[0], // Simple 4-char code
+    required:true, // Simple 4-char code
   },
 
   //new field.. added
@@ -34,11 +34,6 @@ const teamSchema = new mongoose.Schema({
     }
   ],
 
-  tournament: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Tournament",
-    required: true,
-  },
 
   createdBy: {
   type: mongoose.Schema.Types.ObjectId,

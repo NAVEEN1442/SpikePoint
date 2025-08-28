@@ -145,6 +145,7 @@ export const createTeamForTournament = ({ tournamentId, teamName }) => {
   return async (dispatch, getState) => {
     dispatch(setLoading(true));
     try {
+      console.log("Creating team with:", { tournamentId, teamName });
       const token = getState().auth.token;
       const response = await apiConnector(
         "POST",

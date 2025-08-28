@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 // Create Team
 exports.createTeam = async (req, res) => {
   try {
+    console.log("Request Body:", req.body);
     const { tournamentId, teamName } = req.body;
     const userId = req.user.id;
 
@@ -28,7 +29,7 @@ exports.createTeam = async (req, res) => {
     const team = await Team.create({
       name: teamName,
       teamCode,
-      tournament: tournamentId,
+      tournamentId: tournamentId,
       members: [userId],
       createdBy: userId,
       captain: userId,
