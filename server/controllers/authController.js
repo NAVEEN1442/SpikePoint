@@ -157,14 +157,16 @@ exports.logIn = async (req, res) => {
       expiresIn: "15d",
     });
 
-
     // Remove password before sending
     existingUser.password = undefined;
 
-    res.cookie("token", token, cookieOptions)
+    // ✅ Send token in both cookie & response
+    res
+      .cookie("token", token, cookieOptions)
       .status(200)
       .json({
         success: true,
+        token, // 🔥 now included in JSON
         user: existingUser,
         message: "User logged in successfully",
       });
@@ -175,6 +177,7 @@ exports.logIn = async (req, res) => {
       .json({ success: false, message: "Something went wrong during login" });
   }
 };
+
 
 
 // Send OTP

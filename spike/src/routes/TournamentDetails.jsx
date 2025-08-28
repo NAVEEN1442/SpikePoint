@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getTournamentById, createTeamForTournament } from "../Services/operations/tournamentAPI";
+import { getTournamentById, createTeamForTournament,updateTournamentStatus  } from "../Services/operations/tournamentAPI";
 import { joinTeamForTournament } from "../Services/operations/teamAPI";
+
 import { Calendar, Clock, Users, Trophy, Gamepad2, Monitor } from "lucide-react";
 
 function TournamentDetails() {
@@ -170,6 +171,18 @@ function TournamentDetails() {
     );
   }
 
+const handleUpdateStatus = (status) => {
+  dispatch(updateTournamentStatus(tournamentDetails._id, status))
+    .then(() => {
+      setTournamentDetails((prev) => ({ ...prev, status }));
+    })
+    .catch((err) => {
+      console.error("Failed to update status:", err);
+    });
+};
+
+
+
   return (
     <div className="min-h-screen  text-white">
       {/* Hero Section with Banner */}
@@ -201,6 +214,22 @@ function TournamentDetails() {
                 <div className="w-3 h-3 rounded-full bg-current animate-pulse"></div>
                 <span className="font-semibold">{tournamentDetails?.status || "Pending"}</span>
               </div>
+              {/* ✅ Only creator can mark as completed */}
+              {tournamentDetails?.createdBy?._id === userId && (
+              <div className="ml-4">
+                <select
+                  value={tournamentDetails?.status || "pending"}
+                  onChange={(e) => handleUpdateStatus(e.target.value)}
+                  className="border rounded px-3 py-2"
+                >
+                  <option value="upcoming">Upcoming</option>
+                  <option value="ongoing">Ongoing</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            )}
+
             </div>
           </div>
 
@@ -222,6 +251,7 @@ function TournamentDetails() {
                 Join Tournament
               </button>
             )}
+            
           </div>
         </div>
       </div>
