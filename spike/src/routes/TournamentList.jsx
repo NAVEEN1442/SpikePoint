@@ -10,6 +10,8 @@ import { getAllTournaments } from "../Services/operations/tournamentAPI";
 import { setTournaments, addTournament, setConnected, deleteTournament } from "../slices/tournamentSlice";
 import TournamentCard from "@/components/ListCard"; // Assuming correct path
 import TournamentCardSkeleton from "@/components/TournamentCardSkeleton"; // New skeleton component
+import { PlaceholdersAndVanishInput } from "@/components/ui/inputSearch";
+import NavBar from "@/components/Navbar";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:4000";
 
@@ -19,6 +21,15 @@ function TournamentList() {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [gameFilter, setGameFilter] = useState("all");
+
+            const placeholders = [
+            "Who’s the final boss you’ll never forget?",
+            "Name a game that made you rage quit!",
+            "What’s your ultimate cheat code?",
+            "Best clutch moment you’ve ever seen?",
+            ];
+
+
 
     // Get all state directly from Redux store
     const { tournaments, connected } = useSelector((state) => state.tournament);
@@ -67,6 +78,8 @@ function TournamentList() {
     return (
         <div className="min-h-screen text-white p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
+
+            <NavBar/>
                 {/* Header Section */}
                 <header className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
                     <div>
@@ -89,15 +102,9 @@ function TournamentList() {
                 {/* Filter and Search Section */}
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
                     <div className="relative flex-grow">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search by tournament name..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
-                        {searchTerm && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onClick={() => setSearchTerm("")} />}
+                        
+                        <PlaceholdersAndVanishInput placeholders={placeholders} onChange={(e) => setSearchTerm(e.target.value)} onsubmit={() => setSearchTerm("")}   />
+                        
                     </div>
                     <select
                         value={gameFilter}

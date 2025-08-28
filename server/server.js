@@ -19,6 +19,7 @@ const userRouter = require("./routes/authRoutes");
 const tournamentRouter = require("./routes/tournamentRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const defaultTeamRoutes = require("./routes/defaultTeamRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 // Body parser (skip if multipart/form-data)
 app.use((req, res, next) => {
@@ -81,6 +82,7 @@ app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/tournament", tournamentRouter);
 app.use("/api/v1/team", teamRoutes);
 app.use("/api/v1/default-team", defaultTeamRoutes);
+app.use("/api/v1/profile", profileRoutes);
 
 // Test route
 app.get("/", (req, res) => {

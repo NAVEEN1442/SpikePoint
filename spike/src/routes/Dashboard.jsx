@@ -1,28 +1,14 @@
 import NavBar from '@/components/Navbar'
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { Camera, Upload, Users, Trophy, Shield, Calendar, Mail, Phone, User } from 'lucide-react'
 
 function Dashboard() {
-  // Mock user data based on provided information
-  const [userData] = useState({
-    _id: "68ac7467653994e6f4e65ac9",
-    fullName: "ADMIN1",
-    userName: "admin001",
-    phoneNumber: "1111111111",
-    email: "skumarnaveen1442@gmail.com",
-    createdTournaments: 1,
-    activeTournaments: 0,
-    pastTournaments: 0,
-    activeTeams: 0,
-    defaultTeam: null,
-    profileImage: "",
-    role: "player",
-    joinedTournaments: 0,
-    createdAt: "2025-08-25T14:34:15.272+00:00"
-  })
-
+  // Get user data from Redux auth state
+  const userData = useSelector((state) => state.auth.user)
+  
   const [bannerImage, setBannerImage] = useState("")
-  const [profileImage, setProfileImage] = useState(userData.profileImage)
+  const [profileImage, setProfileImage] = useState(userData?.profileImage || "")
 
   const handleBannerUpload = (event) => {
     const file = event.target.files[0]
@@ -40,6 +26,18 @@ function Dashboard() {
       reader.onload = (e) => setProfileImage(e.target.result)
       reader.readAsDataURL(file)
     }
+  }
+
+  // Loading state if user data is not available
+  if (!userData) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#111111' }}>
+        <NavBar />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-white text-lg">Loading user data...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -145,7 +143,7 @@ function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-400">Tournaments Created</p>
-                  <p className="text-3xl font-bold text-blue-400">{userData.createdTournaments}</p>
+                  <p className="text-3xl font-bold text-blue-400">{userData.createdTournaments?.length || 0}</p>
                 </div>
                 <div className="bg-blue-900 bg-opacity-50 rounded-full p-3">
                   <Trophy className="h-6 w-6 text-blue-400" />
@@ -157,7 +155,7 @@ function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-400">Active Tournaments</p>
-                  <p className="text-3xl font-bold text-green-400">{userData.activeTournaments}</p>
+                  <p className="text-3xl font-bold text-green-400">{userData.activeTournaments?.length || 0}</p>
                 </div>
                 <div className="bg-green-900 bg-opacity-50 rounded-full p-3">
                   <Calendar className="h-6 w-6 text-green-400" />
@@ -169,7 +167,7 @@ function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-400">Joined Tournaments</p>
-                  <p className="text-3xl font-bold text-purple-400">{userData.joinedTournaments}</p>
+                  <p className="text-3xl font-bold text-purple-400">{userData.joinedTournaments?.length || 0}</p>
                 </div>
                 <div className="bg-purple-900 bg-opacity-50 rounded-full p-3">
                   <Trophy className="h-6 w-6 text-purple-400" />
@@ -181,7 +179,7 @@ function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-400">Active Teams</p>
-                  <p className="text-3xl font-bold text-orange-400">{userData.activeTeams}</p>
+                  <p className="text-3xl font-bold text-orange-400">{userData.activeTeams?.length || 0}</p>
                 </div>
                 <div className="bg-orange-900 bg-opacity-50 rounded-full p-3">
                   <Users className="h-6 w-6 text-orange-400" />
@@ -198,19 +196,19 @@ function Dashboard() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Tournaments Created</span>
-                  <span className="font-semibold text-gray-200">{userData.createdTournaments}</span>
+                  <span className="font-semibold text-gray-200">{userData.createdTournaments?.length || 0}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Active Tournaments</span>
-                  <span className="font-semibold text-gray-200">{userData.activeTournaments}</span>
+                  <span className="font-semibold text-gray-200">{userData.activeTournaments?.length || 0}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Past Tournaments</span>
-                  <span className="font-semibold text-gray-200">{userData.pastTournaments}</span>
+                  <span className="font-semibold text-gray-200">{userData.pastTournaments?.length || 0}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Joined Tournaments</span>
-                  <span className="font-semibold text-gray-200">{userData.joinedTournaments}</span>
+                  <span className="font-semibold text-gray-200">{userData.joinedTournaments?.length || 0}</span>
                 </div>
               </div>
             </div>
@@ -221,7 +219,7 @@ function Dashboard() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Active Teams</span>
-                  <span className="font-semibold text-gray-200">{userData.activeTeams}</span>
+                  <span className="font-semibold text-gray-200">{userData.activeTeams?.length || 0}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
                   <span className="text-gray-400">Default Team</span>

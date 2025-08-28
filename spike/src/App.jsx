@@ -23,6 +23,11 @@ import SpinnerWrapper from './components/SpinnerWrapper';
 // ----------------------------
 // Route Wrappers
 // ----------------------------
+// ----------------------------
+// Route Wrappers
+// ----------------------------
+
+// ✅ Protect routes that need login
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
@@ -37,8 +42,9 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
+// ✅ Public routes are open to everyone
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
 
   if (loading) {
     return (
@@ -48,7 +54,7 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
+  return children;
 };
 
 // ----------------------------
@@ -75,24 +81,25 @@ function App() {
   return (
     <div className="relative bg-[#111111] z-10 min-h-screen w-full flex flex-col">
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-        <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-        <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
-        <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} />
+          {/* Public Routes (always accessible) */}
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+          <Route path="/verify-code" element={<PublicRoute><VerifyCodePage /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/forgot-page" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+          <Route path="/set-password" element={<PublicRoute><SetPasswordPage /></PublicRoute>} />
+          <Route path="/buddy-up" element={<PublicRoute><BuddyUp /></PublicRoute>} />
+          <Route path="/tournament-list" element={<PublicRoute><TournamentList /></PublicRoute>} />
 
-        {/* Protected Routes */}
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/tournament-list" element={<ProtectedRoute><TournamentList /></ProtectedRoute>} />
-        <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
-        <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
+          {/* Protected Routes (only if logged in) */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/create-tournament" element={<ProtectedRoute><TournamentCreation /></ProtectedRoute>} />
+          <Route path="/tournament-details/:id" element={<ProtectedRoute><TournamentDetails /></ProtectedRoute>} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+
 
       {/* Toast Notifications */}
       <ToastContainer
