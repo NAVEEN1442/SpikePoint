@@ -225,38 +225,88 @@ exports.deleteTournament = async (req, res) => {
 };
 
 
-exports.markTournamentAsCompleted = async (req, res) => {
+// exports.markTournamentAsCompleted = async (req, res) => {
+//   try {
+//     const tournament = await Tournament.findByIdAndUpdate(
+//       req.params.id,
+//       { tournamentStatus: 'completed'},
+//       { new: true }
+//     );
+
+//     if (!tournament) {
+//       return res.status(404).json({ success: false, message: 'Tournament not found' });
+//     }
+
+//     await moveTournamentToPast(tournament._id);
+
+//     // 🔹 Emit event
+//     const io = req.app.get("io");
+//     io.emit("tournament_completed", tournament);
+//     console.log("🏁 Tournament completed event emitted:", tournament._id);
+
+//     return res.status(200).json({
+//       success: true,
+//       message: 'Tournament marked as completed and users updated',
+//       data: tournament,
+//     });
+//   } catch (error) {
+//     console.error('❌ Complete Tournament Error:', error);
+//     return res.status(500).json({ success: false, message: 'Could not complete tournament' });
+//   }
+// };
+
+
+// Utility: Move from active to past tournaments
+
+
+exports.updateTournamentStatus = async (req, res) => {
   try {
+    // 🔹 Check if user is admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized: Admins only" });
+    }
+
+    const { status } = req.body;
+    const validStatuses = ["upcoming", "ongoing", "completed", "cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status" });
+    }
+
     const tournament = await Tournament.findByIdAndUpdate(
       req.params.id,
-      { tournamentStatus: 'completed', status: 'completed' },
+      { tournamentStatus: status },
       { new: true }
     );
 
     if (!tournament) {
-      return res.status(404).json({ success: false, message: 'Tournament not found' });
+      return res.status(404).json({ success: false, message: "Tournament not found" });
     }
 
-    await moveTournamentToPast(tournament._id);
+    if (status === "completed") {
+      await moveTournamentToPast(tournament._id);
+    }
 
-    // 🔹 Emit event
     const io = req.app.get("io");
-    io.emit("tournament_completed", tournament);
-    console.log("🏁 Tournament completed event emitted:", tournament._id);
+    if (io) {
+      io.emit("tournament_updated", tournament);
+      io.emit(`tournament_${status}`, tournament);
+    }
 
     return res.status(200).json({
       success: true,
-      message: 'Tournament marked as completed and users updated',
+      message: `Tournament marked as ${status}`,
       data: tournament,
     });
   } catch (error) {
-    console.error('❌ Complete Tournament Error:', error);
-    return res.status(500).json({ success: false, message: 'Could not complete tournament' });
+    console.error("❌ Update Tournament Status Error:", error);
+    return res.status(500).json({ success: false, message: "Could not update status" });
   }
 };
 
 
-// Utility: Move from active to past tournaments
+
+
+
 const moveTournamentToPast = async (tournamentId) => {
   const tournament = await Tournament.findById(tournamentId).populate('participants.user');
 
